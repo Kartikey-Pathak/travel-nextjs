@@ -19,7 +19,10 @@ export default function Hero() {
       try {
         const res = await fetch("/api/packages");
         const data = await res.json();
-        setPackages(data);
+
+        // ✅ Only show domestic packages
+        const domesticPackages = data.filter(pkg => pkg.type === "domestic");
+        setPackages(domesticPackages);
       } catch (error) {
         console.error("Error fetching packages:", error);
       }
@@ -65,7 +68,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="flex flex-col items-center justify-center bg-[#F2F2F6] py-20">
+    <section id="domestic" className="flex flex-col items-center justify-center bg-[#F2F2F6] py-20">
       {/* Animated Heading */}
       <h1
         ref={headingRef}
@@ -87,8 +90,10 @@ export default function Hero() {
               />
             ))
           ) : (
-            <div className=" flex items-center justify-center min-h-[50vh] col-span-full">
-              <span className=" text-blue-500  loading loading-dots loading-xl"></span>
+            <div className="flex items-center justify-center min-h-[50vh] col-span-full">
+              <p className="text-gray-500 text-5xl font-semibold">
+                Coming soon...
+              </p>
             </div>
           )}
         </div>

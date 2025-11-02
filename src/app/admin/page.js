@@ -5,12 +5,14 @@ export default function AdminPage() {
   const [packages, setPackages] = useState([]);
   const [form, setForm] = useState({
     city: "",
+    type: "", // ✅ new field
     img: "",
     days: "",
     des: "",
     timeline: [],
   });
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch all packages
   useEffect(() => {
@@ -96,32 +98,41 @@ export default function AdminPage() {
     if (!confirm("Are you sure you want to remove this day?")) return;
     const updated = [...form.timeline];
     updated.splice(index, 1);
-    // Reorder day numbers
-    updated.forEach((day, i) => (day.day = i + 1));
+    updated.forEach((day, i) => (day.day = i + 1)); // reorder
     setForm({ ...form, timeline: updated });
   }
 
   // Submit form
   async function handleSubmit() {
     try {
-       if (!form.city.trim()) {
-      alert("Please enter the city name.");
-      return;
-    }
+      if (!form.city.trim()) {
+        alert("Please enter the city name.");
+        return;
+      }
+      if (!form.type.trim()) {
+        alert("Please select package type (Domestic or International).");
+        return;
+      }
+      if (!form.img.trim()) {
+        alert("Please upload an image for this package.");
+        return;
+      }
 
-    if (!form.img.trim()) {
-      alert("Please upload an image for this package.");
-      return;
-    }
+      setSubmitting(true);
+
       await fetch("/api/packages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      setForm({ city: "", img: "", days: "", des: "", timeline: [] });
+
+      setForm({ city: "", type: "", img: "", days: "", des: "", timeline: [] });
       fetchPackages();
     } catch (err) {
       console.error("Error saving package:", err);
+      alert("Failed to save package.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -150,6 +161,17 @@ export default function AdminPage() {
             onChange={(e) => setForm({ ...form, city: e.target.value })}
             className="border p-2 rounded border-black text-black"
           />
+
+          {/* ✅ Type selection */}
+          <select
+            value={form.type}
+            onChange={(e) => setForm({ ...form, type: e.target.value })}
+            className="border p-2 rounded border-black text-black"
+          >
+            <option value="">Select Type</option>
+            <option value="domestic">Domestic</option>
+            <option value="international">International</option>
+          </select>
 
           {/* Upload image */}
           <div>
@@ -246,13 +268,16 @@ export default function AdminPage() {
 
         <button
           onClick={handleSubmit}
-          className="mt-6 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 cursor-pointer transition-all"
+          disabled={submitting}
+          className={`mt-6 px-6 py-2 rounded text-white cursor-pointer transition-all ${
+            submitting ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+          }`}
         >
-          Save Package
+          {submitting ? "Saving..." : "Save Package"}
         </button>
       </div>
 
-      {/* List of existing packages */}
+      {/* Existing packages */}
       <div>
         <h2 className="text-xl font-semibold mb-4 text-black">Existing Packages</h2>
         <ul className="space-y-3">
@@ -262,7 +287,12 @@ export default function AdminPage() {
               className="flex justify-between border p-3 rounded-lg bg-white"
             >
               <div>
-                <p className="font-bold text-black">{pkg.city}</p>
+                <p className="font-bold text-black">
+                  {pkg.city}{" "}
+                  <span className="text-xs bg-gray-200 text-black px-2 py-1 rounded ml-2">
+                    {pkg.type ? pkg.type.charAt(0).toUpperCase() + pkg.type.slice(1) : "N/A"}
+                  </span>
+                </p>
                 <p className="text-sm text-gray-600">{pkg.days}</p>
                 {pkg.img && (
                   <img

@@ -8,6 +8,7 @@ const timelineSchema = new Schema({
 
 const packageSchema = new Schema({
   city: { type: String, required: true, unique: true },
+  type: { type: String, enum: ["domestic", "international"], required: true }, // ✅ new field
   img: String,
   days: String,
   des: String,
