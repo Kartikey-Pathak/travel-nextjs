@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-export default function Enquiry() {
+function EnquiryForm() {
   const searchParams = useSearchParams();
   const city = searchParams.get("city") || ""; // e.g. /enquiry?city=Goa
 
@@ -204,5 +204,13 @@ ${form.email ? `*Email:* ${form.email}%0A` : ""}
         <div className="h-56 md:h-14"></div>
       </div>
     </section>
+  );
+}
+
+export default function EnquiryPage() {
+  return (
+    <Suspense fallback={<div className="text-center text-gray-500 mt-10">Loading...</div>}>
+      <EnquiryForm />
+    </Suspense>
   );
 }
